@@ -5,10 +5,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "covid")
 public class Corona {
-    //calling Events table columns and storing in objects
+    //calling covid table columns and storing in objects
     @Id
     @Column(name = "id")
     private String id;
+    @Column(name = "Country")
+    private String Country;
     @Column(name = "Tcase")
     private String Tcase;
     @Column(name = "Acase")
@@ -27,9 +29,10 @@ public class Corona {
     {
 
     }
-    public Corona(String Tcase, String id, String Acase, String Rcase, String Death, String Date) {
+    public Corona(String Tcase, String id, String Acase, String Rcase, String Death, String Date, String Country) {
 
         this.id = id;
+        this.Country = Country;
         this.Tcase = Tcase;
         this.Acase = Acase;
         this.Rcase = Rcase;
@@ -47,6 +50,14 @@ public class Corona {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getCountry() {
+        return Country;
+    }
+
+    public void setCountry(String Country) {
+        this.Country = Country;
     }
 
     public String getTcase() {

@@ -7,11 +7,15 @@
     <title> Covid-19 </title>
     <style><%@include file="../css/style.css"%></style>
 </head>
+<a href="<c:url value="/login" />">Logout</a>
+
 <body>
     <hr>
+    <div>
     <h1>Covid-19</h1>
         <form method="get" action="/get/">
             <select name="id1">
+                                <option value=" ">Click to Chose a Country</option>
                                 <option value="USA">United States</option>
                                 <option value="Argentina">Argentina</option>
                                 <option value="Austria">Austria</option>
@@ -65,65 +69,140 @@
 
 
         </form>
+        </div>
     </hr>
 
 
 
-    <h2>Events Information</h2>
+    <h2>Covid Cases Information</h2>
+        <table>
+                <tr >
+                    <th>Country</th>
+                    <th>Total Cases</th>
+                    <th>Active Cases</th>
+                    <th>Recovered Cases</th>
+                    <th>Total Deaths</th>
+                    <th>Dates</th>
+                </tr>
+                <tr>
+                    <td>  <%=request.getParameter("Country_text")%> </td>
+                    <td>  <%=request.getParameter("Total Cases_text")%> </td>
+                    <td> <%=request.getParameter("Active Cases_text")%> </td>
+                    <td> <%=request.getParameter("Total Recovered_text")%> </td>
+                    <td> <%=request.getParameter("Total Deaths_text")%> </td>
+                    <td> <%=request.getParameter("Last Update")%> </td>
+                </tr>
+        </table>
+
+
 
     <form method="post" action="/post/" >
+
+    <div>
+            <input type="submit" value="Click to Save for Snapshot">
+
+    </div>
+    <h2>SnapShot Information</h2>
+
     <table  class="w3-table-all">
         <tr class="w3-blue">
 
 
+            <th>Country</th>
             <th>Total Cases</th>
             <th>Active Cases</th>
             <th>Recovered Cases</th>
             <th>Total Deaths</th>
             <th>Dates</th>
+            <th>Delete from SnapShot History</th>
         </tr>
+
 
 
         <c:forEach  var = "covid" items = "${covidlist}">
             <tr>
 
+                <td>${covid.getCountry()}</td>
                 <td>${covid.getTcase()}</td>
                 <td>${covid.getAcase()}</td>
                 <td>${covid.getRcase()}</td>
                 <td>${covid.getDeath()}</td>
-                <td>${covid.getDate()} <a href="/delete/${covid.getId()}">Delete</a></td>
+                <td>${covid.getDate()}</td>
+                <td> <a href="/delete/${covid.getId()}">Delete</a></td>
 
             </tr>
-
         </c:forEach>
-    <div>
-        <h2>Total</h2><h3 >  <%=request.getParameter("Total Cases_text")%> </h3>
-        <h2></h2><h3 > <input type="hidden"name="id2" value=<%=request.getParameter("Total Cases_text")%>> </h3>
 
-        <h2>Active</h2><h3 >  <%=request.getParameter("Active Cases_text")%> </h3>
-        <h2></h2><h3 > <input type="hidden"name="id3" value=<%=request.getParameter("Active Cases_text")%>> </h3>
 
-        <h2>Recovered</h2><h3 >  <%=request.getParameter("Total Recovered_text")%> </h3>
-        <h2></h2><h3 > <input type="hidden"name="id4" value=<%=request.getParameter("Total Recovered_text")%>> </h3>
 
-        <h2>Death</h2><h3 >  <%=request.getParameter("Total Deaths_text")%> </h3>
-        <h2></h2><h3 > <input type="hidden"name="id5" value=<%=request.getParameter("Total Deaths_text")%>> </h3>
 
-        <h2>Date</h2><h3 > <%=request.getParameter("Last Update")%> </h3>
-        <h2></h2><h3 > <input type="hidden"name="id6" value=<%=request.getParameter("Last Update")%>> </h3>
+            <div>
+                <h2></h2><h3 > <input type="hidden"name="id7" value=<%=request.getParameter("Country_text")%>> </h3>
+                <h2></h2><h3 > <input type="hidden"name="id2" value=<%=request.getParameter("Total Cases_text")%>> </h3>
+                <h2></h2><h3 > <input type="hidden"name="id3" value=<%=request.getParameter("Active Cases_text")%>> </h3>
+                <h2></h2><h3 > <input type="hidden"name="id4" value=<%=request.getParameter("Total Recovered_text")%>> </h3>
+                <h2></h2><h3 > <input type="hidden"name="id5" value=<%=request.getParameter("Total Deaths_text")%>> </h3>
+                <h2></h2><h3 > <input type="hidden"name="id6" value=<%=request.getParameter("Last Update")%>> </h3>
+            </div>
 
-    </div>
 
-        <input type="submit" value="Submit for Snapshot">
 
 
          </form>
 
-
-
-
     </table>
-<a href="/chart" >Open</a>
+
+
+             <form method="post" action="/edit/">
+                           <div><h2>Country</h2><h3 > <input type="text"name="Country" </h3></div>
+                           <div><h2>Total Cases</h2><h3 > <input type="text"name="total" </h3></div>
+                           <div><h2>Active Case</h2><h3 > <input type="text"name="active" </h3></div>
+                           <div><h2>Recovered Cases</h2><h3 > <input type="text"name="reco" </h3></div>
+                           <div><h2>Total Death</h2><h3 > <input type="text"name="death" </h3></div>
+                           <div><h2>Current Date</h2><h3 > <input type="text"name="date" </h3></div>
+                           <div><input type="submit" value="Click to Add the Desired Information "><div>
+             </form>
+
+
+             <div>
+             <script var = "covid" items = "${covidlist}" type="text/javascript">
+             window.onload = function () {
+
+             var chart = new CanvasJS.Chart("chartContainer", {
+             	theme: "dark2", // "light2", "dark1", "dark2"
+             	animationEnabled: true, // change to true
+             	title:{
+             		text: "Chart of total Active Cases"
+             	},
+             	data: [
+             	{
+             		// Change type to "bar", "area", "spline", "pie",etc.
+             		type: "bar",
+             		dataPoints: [
+             			{ label: "Austria",  y: 297245  },
+             			{ label: "USA", y: 14772535  },
+             			{ label: "Pakistan", y:  413191 },
+             			{ label: "Russia",  y: 2402949 },
+             			{ label: "Japan",  y: 155232  }
+             		]
+             	}
+             	]
+             });
+             chart.render();
+
+             }
+             </script>
+             </head>
+             <body>
+             <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+             <script src="https://canvasjs.com/assets/script/canvasjs.min.js"> </script>
+             </div>
+
+
+
+
+
+
 
 
 </body>

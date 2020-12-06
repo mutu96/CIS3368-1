@@ -7,10 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.BufferedReader;
@@ -20,61 +17,35 @@ import java.net.URL;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Controller
+
 public class MainController {
 
     @Autowired
     CoronaRepo coronaRepo;
-    @RequestMapping( value = "/chart", method = RequestMethod.GET)
-    public ModelAndView view(){
-        ModelAndView mv = new ModelAndView("chart");
 
-        CanvasjsChartData chartDataObject = new CanvasjsChartData();
-        List<List<Map<Object, Object>>> canvasjsDataList = chartDataObject.getCanvasjsDataList();
-        mv.addObject("dataPointsList", canvasjsDataList);
+// for login we were using built in login that comes with spring booth these are the dependencies
+// that needs to be added in order to see a working login page the only reason it was taken out
+// was that spring boot started giving error when the post method was used through the click of
+// a button to push the api call in the database.
 
+            /*<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
-        ParseAnotherJSONFile();
-
-        return mv;
-    }
-
-
-
-    private void ParseAnotherJSONFile()
-    {
-        //data from https://opendata.hawaii.gov/dataset/hawaii-ev-charging-stations-02072013/resource/02eea87e-10f5-4f03-a808-d7b59f98c093
-        String url = "https://og-production-open-data-shared-ckan-892364687672.s3.amazonaws.com/hawaii/resources/02eea87e-10f5-4f03-a808-d7b59f98c093/hawaii-ev-charging-stations-02072013-json.json?Signature=bLluBZtSppum7TCqsUSNvBlfPc4%3D&Expires=1605929258&AWSAccessKeyId=AKIAJJIENTAPKHZMIPXQ";
-
-        try
-        {
-            HttpResponse<String> response = (HttpResponse<String>) Unirest.get(url).asString();
-            String json = ((com.mashape.unirest.http.HttpResponse<?>) response).getBody().toString();
-            JSONObject jsonObj = new JSONObject(json);
-
-            JSONObject meta = jsonObj.getJSONObject("meta");
-            JSONObject view = meta.getJSONObject("view");
-            String name = view.getString("name");
-            JSONArray approvals = view.getJSONArray("approvals");
-
-            int numberOfApprovals = approvals.length();
-
-            JSONObject firstOne = approvals.getJSONObject(0);
-            String state = firstOne.getString("state");
-
-            JSONObject submitter = firstOne.getJSONObject("submitter");
-            String submitterName = submitter.getString("displayName");
-        }
-        catch (Exception ex)
-        {
-
-        }
-
-    }
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>*/
 
 
+    // we are displaying the database table content from here
     @RequestMapping ("/")
     public ModelAndView doHome() {
         //calling index.jsp for html page
@@ -87,6 +58,8 @@ public class MainController {
         return mv;
     }
 
+
+    //we are calling the information from API through the get method and converting it in to a String.
     @RequestMapping(value = "/get", method = RequestMethod.GET)
     public ModelAndView get (@RequestParam("id1") String id){
         ModelAndView mv = new ModelAndView("redirect:/");
@@ -94,6 +67,8 @@ public class MainController {
         try{
             JSONObject json = new JSONObject(covid);
 
+
+            mv.addObject("Country_text", json.getString("Country_text"));
             mv.addObject("Total Cases_text", json.getString("Total Cases_text"));
             mv.addObject("Active Cases_text", json.getString("Active Cases_text"));
             mv.addObject("Total Recovered_text", json.getString("Total Recovered_text"));
@@ -110,12 +85,9 @@ public class MainController {
         return mv;
     }
 
-
-
-
     private String getCovidinfo(String id){
         try {
-            //String apiKey = "cfc6ae8e";
+
             URL urlForGetRequest = new URL("https://covid-19.dataflowkit.com/v1/" + id );
 
             HttpURLConnection connection = (HttpURLConnection) urlForGetRequest.openConnection();
@@ -138,13 +110,17 @@ public class MainController {
         }
     }
 
+
+    // we are pushing the displayed API information in the table we created in workbench which is connected to the AWS database.
     @RequestMapping(value = "/post/", method = RequestMethod.POST)
-    public ModelAndView save(@RequestParam("id2") String id2, @RequestParam("id3") String id3, @RequestParam("id4") String id4, @RequestParam("id5") String id5,@RequestParam("id6") String id6)
+    public ModelAndView save(@RequestParam("id7") String id7, @RequestParam("id2") String id2, @RequestParam("id3") String id3, @RequestParam("id4") String id4, @RequestParam("id5") String id5,@RequestParam("id6") String id6)
     {
         ModelAndView mv = new ModelAndView("redirect:/");
         Corona coronaTosave;
         coronaTosave = new Corona();
         coronaTosave.setId(UUID.randomUUID().toString());
+        coronaTosave.setCountry(id7);
+        coronaRepo.save(coronaTosave);
         coronaTosave.setTcase(id2);
         coronaRepo.save(coronaTosave);
         coronaTosave.setAcase(id3);
@@ -159,6 +135,32 @@ public class MainController {
         return mv;
     }
 
+    //information from text box are being pushed in the table we created in workbench which is connected to the AWS database, and we are giving UUid to each row in the table.
+    @RequestMapping(value = "/edit/", method = RequestMethod.POST)
+    public ModelAndView save2(@RequestParam("Country") String Country, @RequestParam("total") String total, @RequestParam("active") String active, @RequestParam("reco") String reco, @RequestParam("death") String death,@RequestParam("date") String date)
+    {
+        ModelAndView mv = new ModelAndView("redirect:/");
+        Corona coronaTosave;
+        coronaTosave = new Corona();
+        coronaTosave.setId(UUID.randomUUID().toString());
+        coronaTosave.setCountry(Country);
+        coronaRepo.save(coronaTosave);
+        coronaTosave.setTcase(total);
+        coronaRepo.save(coronaTosave);
+        coronaTosave.setAcase(active);
+        coronaRepo.save(coronaTosave);
+        coronaTosave.setRcase(reco);
+        coronaRepo.save(coronaTosave);
+        coronaTosave.setDeath(death);
+        coronaRepo.save(coronaTosave);
+        coronaTosave.setDate(date);
+        coronaRepo.save(coronaTosave);
+        mv.addObject("covidlist", coronaRepo.findAll());
+        return mv;
+    }
+
+
+    //through this table rows can be deleted, and we are calling the UUid so it selects the exact row from the table.
     @RequestMapping( value = "/delete/{id}", method = RequestMethod.GET)
     public ModelAndView delete1(@PathVariable("id") String id){
         ModelAndView mv = new ModelAndView("redirect:/");
@@ -166,6 +168,9 @@ public class MainController {
         coronaRepo.deleteById(id);
         return mv;
     }
+
+
+
 
 
 
